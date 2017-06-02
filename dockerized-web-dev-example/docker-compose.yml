@@ -1,0 +1,42 @@
+version: '3'
+services:
+  server:
+    build:
+      context: ./
+      dockerfile: ./docker/apache.dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src/:/usr/local/apache2/htdocs
+      - ./docker/apache/000-default.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf
+    links:
+      - php
+  php:
+    build:
+      context: ./
+      dockerfile: ./docker/php.dockerfile
+    volumes:
+      - ./src/:/usr/local/apache2/htdocs
+      - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini
+      - ./docker/php-fpm/zzz-docker.conf:/usr/local/etc/php-fpm.d/zzz-docker.conf
+    links:
+        - database
+  database:
+    image: mysql:5.7
+    volumes:
+      - ./src/:/var/www/html
+      - data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      # Can also be read from .env file
+      # MYSQL_DATABASE=${DB_NAME}
+      # MYSQL_USER=${DB_USERNAME}
+      - "MYSQL_DATABASE=webdev"
+      - "MYSQL_USER=webdev"
+      - "MYSQL_PASSWORD=!123_AbCxYz"
+      - "MYSQL_ROOT_PASSWORD=crYpt1cP4$$"
+
+volumes:
+  data:
